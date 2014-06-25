@@ -1,0 +1,12 @@
+{application, modelo,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { modelo_app, []}},
+  {env, []}
+ ]}.
