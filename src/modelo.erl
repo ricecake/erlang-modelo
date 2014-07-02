@@ -1,6 +1,6 @@
 -module(modelo).
 
--export([init/2, find/2, grep/2, search/2]).
+-export([init/2, find/2, grep/2, search/2, insert/2, update/2, recordToMap/2, mapToRecord/2]).
 
 %-fields([]).
 
@@ -12,11 +12,16 @@ find(Table, Key) ->
 	[ recordToMap(Table, Rec) || Rec <- mnesia:transaction(fun()-> mnesia:read(Match) end)].
 
 grep(Table, Values) ->
-	Params = [ {P, V} || {P, {ok, V}} <- [ {I, maps:find(K, Values)} || {I, K} <- getFieldOffsets(Table)]],
-	Pattern = erlang:make_tuple(length(Params)+1, '_', [{1, Table}|Params]),
+	Pattern = mapToRecord(Table, Values),
 	[ recordToMap(Table, Rec) || Rec <- mnesia:transaction(fun()-> mnesia:match_object(Pattern) end) ].
 
 search(Table, Pattern) -> [].
+insert(Table, Record) -> [].
+update(Table, Pattern) -> [].
+
+mapToRecord(Table, Values) -> 
+	Params = [ {P, V} || {P, {ok, V}} <- [ {I, maps:find(K, Values)} || {I, K} <- getFieldOffsets(Table)]],
+	erlang:make_tuple(length(Params)+1, '_', [{1, Table}|Params]).
 
 recordToMap(Table, Record) ->
 	maps:from_list([ {K, element(I, Record)} || {I, K} <- getFieldOffsets(Table)]).
