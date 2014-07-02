@@ -9,12 +9,12 @@ init(Table, Opts) ->
 
 find(Table, Key) ->
 	Match = erlang:make_tuple(2, [Table, Key]),
-	[ recordToMap(Rec) || Rec <- mnesia:transaction(fun()-> mnesia:read(Match) end)].
+	[ recordToMap(Table, Rec) || Rec <- mnesia:transaction(fun()-> mnesia:read(Match) end)].
 
 grep(Table, Values) ->
 	Params = [ {P, V} || {P, {ok, V}} <- [ {I, maps:find(K, Values)} || {I, K} <- getFieldOffsets(Table)]],
 	Pattern = erlang:make_tuple(length(Params)+1, '_', [{1, Table}|Params]),
-	[ recordToMap(Rec) || Rec <- mnesia:transaction(fun()-> mnesia:match_object(Pattern) end) ].
+	[ recordToMap(Table, Rec) || Rec <- mnesia:transaction(fun()-> mnesia:match_object(Pattern) end) ].
 
 search(Table, Pattern) -> [].
 
