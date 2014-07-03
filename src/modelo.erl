@@ -1,6 +1,6 @@
 -module(modelo).
 
--export([init/2, find/2, grep/2, search/2, insert/2, update/2, recordToMap/2, mapToRecord/2]).
+-export([init/2, find/2, grep/2, search/2, insert/2, update/3, recordToMap/2, mapToRecord/2]).
 
 %-fields([]).
 
@@ -16,8 +16,26 @@ grep(Table, Values) ->
 	[ recordToMap(Table, Rec) || Rec <- mnesia:transaction(fun()-> mnesia:match_object(Pattern) end) ].
 
 search(Table, Pattern) -> [].
-insert(Table, Record) -> [].
-update(Table, Pattern) -> [].
+
+insert(Table, Row) ->
+	Record = mapToRecord(Table, Row),
+	[ recordToMap(Table, Rec) || Rec <- mnesia:transaction(fun()-> mnesia:write(Record) end)].
+
+update(Table, Pattern, Update) ->
+	BaseRecord = mapToRecord(Table, Update),
+	Merge = fun DoUpdate(Base, _New, 0) -> Base;
+	    	    DoUpdate(Base, New, Acc) -> 
+			NewBase = case element(Acc, New) of
+				'_' -> Base;
+				Val -> setelement(Acc, Base, Val)
+			end,
+			DoUpdate(NewBase, New, Acc-1)
+		end,
+	Size = size(BaseRecord),
+	mnesia:transaction(fun() -> 
+		[ mnesia:write(Merge(OldRecord, BaseRecord, Size)) || OldRecord <- mnesia:match_object(mapToRecord(Table, Pattern))]
+	end).
+
 
 mapToRecord(Table, Values) -> 
 	Params = [ {P, V} || {P, {ok, V}} <- [ {I, maps:find(K, Values)} || {I, K} <- getFieldOffsets(Table)]],
