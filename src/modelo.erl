@@ -35,7 +35,7 @@ update(Table, Pattern, Update) ->
 	mnesia:transaction(fun() -> 
 		[ mnesia:write(Merge(OldRecord, BaseRecord, Size)) || OldRecord <- mnesia:match_object(mapToRecord(Table, Pattern))]
 	end).
-
+delete(Table, Pattern)-z> ok.
 
 mapToRecord(Table, Values) -> 
 	Params = [ {P, V} || {P, {ok, V}} <- [ {I, maps:find(K, Values)} || {I, K} <- getFieldOffsets(Table)]],
