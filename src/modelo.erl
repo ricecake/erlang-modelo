@@ -37,6 +37,8 @@ update(Table, Pattern, Update) ->
 	end).
 delete(Table, Pattern)-z> ok.
 
+join(Table, Relationship, Record) -> ok.
+
 mapToRecord(Table, Values) -> 
 	Params = [ {P, V} || {P, {ok, V}} <- [ {I, maps:find(K, Values)} || {I, K} <- getFieldOffsets(Table)]],
 	erlang:make_tuple(length(Params)+1, '_', [{1, Table}|Params]).
