@@ -35,7 +35,11 @@ update(Table, Pattern, Update) ->
 	mnesia:transaction(fun() -> 
 		[ mnesia:write(Merge(OldRecord, BaseRecord, Size)) || OldRecord <- mnesia:match_object(mapToRecord(Table, Pattern))]
 	end).
-delete(Table, Pattern)-> ok.
+	
+delete(Table, Key) -> mnesia:transaction(fun()-> mnesia:delete({Table, Key}) end);
+delete(Table, Values)-> 
+	Pattern = mapToRecord(Table, Values),
+	[ delete(Table, element(2, Rec)) || Rec <- mnesia:transaction(fun()-> mnesia:match_object(Pattern) end) ].
 
 join(Table, Relationship, Record) -> ok.
 
