@@ -41,7 +41,12 @@ delete(Table, Values)->
 	Pattern = mapToRecord(Table, Values),
 	[ delete(Table, element(2, Rec)) || Rec <- mnesia:transaction(fun()-> mnesia:match_object(Pattern) end) ].
 
-join(Table, Relationship, Record) -> ok.
+join(Table, Relationship, Record) ->
+	resolveJoin(lists:keyfind(Relationship, 2, getJoins(Table)), Table, Record).
+
+
+resolveJoin({belongs_to, Remote, Field}, Table, Record) -> ok;
+resolveJoin({has_many,   Remote, Field}, Table, Record) -> ok.
 
 mapToRecord(Table, Values) -> 
 	Params = [ {P, V} || {P, {ok, V}} <- [ {I, maps:find(K, Values)} || {I, K} <- getFieldOffsets(Table)]],
@@ -54,6 +59,10 @@ getFieldOffsets(Table) ->
 	Fields = getFields(Table),
 	lists:zip(lists:seq(2, length(Fields)+1), Fields).
 
-getFields(Table) ->	
-	{fields, Fields} = proplists:lookup(fields, Table:module_info(attributes)),
-	Fields.
+getFields(Table) -> lookupAttr(Table, fields).
+getJoins(Table) -> lookupAttr(Table, join).
+
+lookupAttr(Module, Attr) ->
+	{Attr, Data} = proplists:lookup(Attr, Module:module_info(attributes)),
+	Data.
+
