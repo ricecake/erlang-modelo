@@ -45,8 +45,8 @@ join(Table, Relationship, Record) ->
 	resolveJoin(lists:keyfind(Relationship, 2, getJoins(Table)), Table, Record).
 
 
-resolveJoin({belongs_to, Remote, Field}, Table, Record) -> ok;
-resolveJoin({has_many,   Remote, Field}, Table, Record) -> ok.
+resolveJoin({belongs_to, Remote, Field}, Table, Record) -> find(Remote, maps:lookup(Field, Record));
+resolveJoin({has_many,   Remote, Field}, Table, Record) -> grep(Remote, #{Field => maps:lookup(Field, Record)}).
 
 mapToRecord(Table, Values) -> 
 	Params = [ {P, V} || {P, {ok, V}} <- [ {I, maps:find(K, Values)} || {I, K} <- getFieldOffsets(Table)]],
